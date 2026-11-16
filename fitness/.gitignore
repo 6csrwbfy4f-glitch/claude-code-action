@@ -1,0 +1,12 @@
+# Gesundheitsdaten, Exporte, Token, Logs, virtuelle Umgebung nie versionieren
+*.zip
+*.xml
+*.json
+*.json.gz
+*.csv
+data/
+*.log
+.venv/
+venv/
+*token*
+.garminconnect/
