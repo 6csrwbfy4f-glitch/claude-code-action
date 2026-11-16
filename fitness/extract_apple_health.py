@@ -66,11 +66,20 @@ def elem_to_dict(e):
 def open_xml(path):
     if zipfile.is_zipfile(path):
         z = zipfile.ZipFile(path)
-        names = [n for n in z.namelist()
-                 if n.endswith("/export.xml") or n == "export.xml"]
-        if not names:
-            sys.exit("In der ZIP liegt keine export.xml.")
-        return z.open(names[0])
+        # Der Dateiname ist sprachabhaengig (export.xml, Export.xml,
+        # exportieren.xml, ...). Wir nehmen die groesste XML-Datei, die
+        # keine CDA-Datei ist - das ist die Haupt-Exportdatei.
+        cands = [i for i in z.infolist()
+                 if i.filename.lower().endswith(".xml")
+                 and "cda" not in i.filename.lower()]
+        if not cands:
+            print("Inhalt der ZIP (erste 30 Eintraege):")
+            for n in z.namelist()[:30]:
+                print("  ", n)
+            sys.exit("In der ZIP liegt keine passende XML-Datei.")
+        best = max(cands, key=lambda i: i.file_size)
+        print(f"Lese {best.filename} ({best.file_size / 1e6:.0f} MB)")
+        return z.open(best)
     return open(path, "rb")
 
 
