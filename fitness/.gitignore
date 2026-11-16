@@ -11,3 +11,5 @@ venv/
 *token*
 .garminconnect/
 __pycache__/
+out/
+*.html
