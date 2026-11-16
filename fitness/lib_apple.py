@@ -86,17 +86,20 @@ def records(d, typ, src):
     return [r for r in d["records"].get(typ, []) if r.get("sourceName") == src]
 
 
-def hrv_per_night(d, src, nts):
-    """Mittel aller SDNN-Messungen, deren startDate im Schlaffenster liegt."""
+def hrv_per_night(d, src, nts, kinds=("full", "short_night")):
+    """Mittel aller SDNN-Messungen, deren startDate im Schlaffenster liegt.
+    Kurze Naechte liefern einen Tageswert, gehen aber nicht in die
+    Basislinie (das filtert der Aufrufer ueber "kind")."""
     hrv = sorted(((P(r["startDate"]), float(r["value"])) for r in
                   records(d, "HKQuantityTypeIdentifierHeartRateVariabilitySDNN", src)))
     out = {}
     for n in nts:
-        if n["kind"] != "full":
+        if n["kind"] not in kinds:
             continue
         vals = [v for t, v in hrv if n["start"] <= t <= n["end"]]
         if vals:
-            out[n["night_of"]] = {"value": sum(vals) / len(vals), "n_samples": len(vals)}
+            out.setdefault(n["night_of"], {"value": sum(vals) / len(vals),
+                                           "n_samples": len(vals), "kind": n["kind"]})
     return out
 
 
